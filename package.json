@@ -2,7 +2,7 @@
   "name": "agent-office",
   "version": "0.1.0",
   "private": true,
-  "description": "A walkable 2D office where every local Claude Code agent is a character",
+  "description": "A walkable 2D office where every AI coding agent running in Herdr is a character",
   "main": "src/main/main.js",
   "scripts": {
     "start": "electron .",

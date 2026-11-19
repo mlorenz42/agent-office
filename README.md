@@ -1,7 +1,8 @@
 # Agent Office
 
-A walkable 2D office for macOS where every Claude Code agent running in [Herdr](https://herdr.dev)
-is a character at a desk. Herdr itself runs on the left, a shell top right, the office bottom right.
+A walkable 2D office for macOS where every AI coding agent running in [Herdr](https://herdr.dev) –
+Claude Code or any other agent Herdr detects – is a character at a desk. Herdr itself runs on the
+left, a shell top right, the office bottom right.
 
 ![The office](assets/screenshot.png)
 
@@ -15,8 +16,8 @@ Herdr. The shortcuts are on the rugs by the entrance and in the Help menu (⌘/)
 
 - macOS on Apple Silicon (speech, fonts and the packaged app are Mac-only; Intel is untested)
 - Node.js 24 with npm
-- [Herdr](https://herdr.dev) with Claude Code running in it
-- Python 3, only for the subagent hooks
+- [Herdr](https://herdr.dev) with one or more coding agents running in it
+- Python 3, only for the Claude Code subagent hooks
 
 ## Install and start
 
@@ -44,7 +45,8 @@ Agent Mulder and Agent Scully are always on the team. Replace the other names in
 
 ## Subagent hooks
 
-Herdr cannot see subagents, so Claude Code reports them through hooks that post to the app.
+Herdr cannot see subagents. Claude Code can report them through hooks that post to the app; other
+agents show up without their subagents.
 
 ```bash
 npm run hooks:install     # into ~/.claude/settings.local.json (sessions started in ~)
