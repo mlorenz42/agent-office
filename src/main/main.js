@@ -116,6 +116,16 @@ function installMenu() {
           paneToggle('Office', 'office', '3'),
           { type: 'separator' },
           { label: i18n.t('defaultLayout'), accelerator: 'CmdOrCtrl+0', click: () => send('layout:command', 'reset') },
+          { type: 'separator' },
+          {
+            label: i18n.t('followFocus'),
+            type: 'checkbox',
+            checked: settings.get('followFocus'),
+            click: (item) => {
+              settings.set('followFocus', item.checked);
+              send('follow-focus', item.checked);
+            },
+          },
         ],
       },
       {
@@ -306,6 +316,7 @@ ipcMain.on('pty:close', (_event, { id }) => {
 });
 ipcMain.handle('agents:get', () => roster.snapshot());
 ipcMain.handle('terminal:font', () => terminalFont());
+ipcMain.handle('follow-focus:get', () => settings.get('followFocus'));
 ipcMain.on('herdr:focus', (_event, { paneId }) => {
   execFile(HERDR, ['agent', 'focus', paneId], { timeout: 5000 }, (error) => {
     if (error) send('herdr-error', `herdr agent focus ${paneId}: ${error.message}`);

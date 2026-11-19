@@ -7,7 +7,8 @@ left, a shell top right, the office bottom right.
 ![The office](assets/screenshot.png)
 
 Each Herdr space is a team area, each agent sits at its desk with its tab name and a status light.
-An agent that needs you walks into your office; the others wait on the chairs outside. Finished
+An agent that needs you walks into your office; the others wait on the chairs outside. While nobody
+waits, you walk over to whichever agent's tab Herdr shows. Finished
 or idle agents take a break in the lounge, subagents are beamed into meeting pods, and agents
 announce "done" or "needs you" out loud. Click an agent, or its empty desk, to jump to its tab in
 Herdr. The shortcuts are on the rugs by the entrance and in the Help menu (⌘/).

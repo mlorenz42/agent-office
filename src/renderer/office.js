@@ -25,6 +25,7 @@
   const characters = new Map();
   const meetingSeats = new Map();
   const loungeSeatByKey = new Map();
+  let visitorKey = null; // the waiting agent standing in my office
   const groupRooms = new Map();
   const bubbles = new Map();
   const keys = new Set();
@@ -182,7 +183,50 @@
     for (const [key, character] of characters) {
       if (!alive.has(key)) character.leaving = true;
     }
+    followFocus();
     firstSnapshot = false;
+  }
+
+  // Office hours: while nobody waits I walk over to the agent whose tab Herdr shows; as soon as
+  // someone needs me I go back to my office and stay there (I can still walk around by hand).
+  let followEnabled = true;
+  let lastFocusedKey = null;
+  let someoneWaited = false;
+  window.office.getFollowFocus().then((enabled) => {
+    followEnabled = enabled;
+  });
+  window.office.onFollowFocus((enabled) => {
+    followEnabled = enabled;
+  });
+
+  function goToOffice() {
+    pinnedKey = null;
+    player.target = world.bossChair;
+    player.path = findPath(world, player, world.bossChair).slice(1);
+  }
+
+  function followFocus() {
+    const focused = snapshot.agents.find((agent) => agent.focused);
+    const focusedKey = focused ? focused.key : null;
+    const focusChanged = focusedKey !== lastFocusedKey;
+    lastFocusedKey = focusedKey;
+    const waiting = snapshot.agents.some((agent) => agent.status === 'blocked');
+    const startedWaiting = waiting && !someoneWaited;
+    someoneWaited = waiting;
+    if (firstSnapshot || !followEnabled) return;
+    if (startedWaiting) {
+      if (player.target !== world.bossChair) goToOffice();
+      return;
+    }
+    if (waiting || !focusChanged || !focused || keys.size) return;
+    const character = characters.get(focused.key);
+    if (!character || pinnedKey === focused.key) return;
+    pinnedKey = focused.key;
+    nearCandidate = { key: focused.key, since: 0, shown: true };
+    const destination = character.target && character.target.seat ? character.target : character;
+    const goal = spotBeside(destination);
+    player.target = goal;
+    player.path = findPath(world, player, goal).slice(1);
   }
 
   function newCharacter(key, position, seed) {
@@ -201,9 +245,13 @@
   }
 
   function assignTargets() {
-    const visitors = snapshot.agents
-      .filter((agent) => agent.status === 'blocked')
-      .sort((a, b) => a.statusSince - b.statusSince);
+    // In my office: the waiting agent whose tab I open; otherwise whoever is already in there;
+    // otherwise whoever waits longest. The others sit on the chairs in that order.
+    const waiting = snapshot.agents.filter((agent) => agent.status === 'blocked');
+    const inOffice = waiting.find((agent) => agent.focused) || waiting.find((agent) => agent.key === visitorKey);
+    visitorKey = inOffice ? inOffice.key : null;
+    const visitors = waiting.sort((a, b) => Number(b === inOffice) - Number(a === inOffice) || a.statusSince - b.statusSince);
+    if (!visitorKey && visitors.length) visitorKey = visitors[0].key;
     const visitorTarget = new Map();
     visitors.forEach((agent, index) => {
       visitorTarget.set(agent.key, index === 0 ? world.visitorSpot : world.queueSpots[Math.min(index - 1, world.queueSpots.length - 1)]);
@@ -596,9 +644,7 @@
       return;
     }
     if (event.code === 'KeyH') {
-      pinnedKey = null;
-      player.path = findPath(world, player, world.bossChair).slice(1);
-      player.target = world.bossChair;
+      goToOffice();
       return;
     }
     keys.add(event.code);
@@ -659,6 +705,13 @@
     if (!agent || !agent.paneId) return;
     if (!character.isSubagent && loungeSeatByKey.has(character.key)) {
       visitDesk(agent);
+      return;
+    }
+    if (agent.status === 'blocked') {
+      // someone waiting is seen in my office: show the tab and let it come in
+      window.Terminals.showAgent(agent);
+      window.Terminals.focusHerdr();
+      goToOffice();
       return;
     }
     pinnedKey = character.key;

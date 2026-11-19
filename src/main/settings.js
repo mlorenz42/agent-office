@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const DEFAULTS = { announceDone: true, announceBlocked: true };
+const DEFAULTS = { announceDone: true, announceBlocked: true, followFocus: true };
 
 function loadSettings(file) {
   let stored = {};
