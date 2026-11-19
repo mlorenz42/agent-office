@@ -7,7 +7,7 @@
   "scripts": {
     "start": "electron .",
     "package": "electron-packager . \"Agent Office\" --platform=darwin --arch=arm64 --out=dist --overwrite --no-asar --icon=assets/icon.icns --ignore=^/scripts --ignore=^/dist --ignore=^/node_modules/node-pty/prebuilds/win32- --ignore=^/node_modules/node-pty/third_party --ignore=^/node_modules/node-pty/deps",
-    "install-app": "npm run package && rm -rf \"/Applications/Agent Office.app\" && ditto \"dist/Agent Office-darwin-arm64/Agent Office.app\" \"/Applications/Agent Office.app\"",
+    "install-app": "npm run package && rm -rf \"/Applications/Agent Office.app\" && ditto \"dist/Agent Office-darwin-arm64/Agent Office.app\" \"/Applications/Agent Office.app\" && rm -rf dist",
     "postinstall": "chmod +x node_modules/node-pty/prebuilds/*/spawn-helper",
     "hooks:install": "python3 -I scripts/hooks.py install",
     "hooks:uninstall": "python3 -I scripts/hooks.py uninstall",
