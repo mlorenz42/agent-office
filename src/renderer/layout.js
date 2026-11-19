@@ -16,6 +16,7 @@
   const horizontal = document.getElementById('split-horizontal');
 
   let layout = load();
+  for (const splitter of [vertical, horizontal]) splitter.title = window.I18n.t('splitterHint');
 
   function load() {
     try {

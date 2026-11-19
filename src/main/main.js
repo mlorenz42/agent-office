@@ -8,6 +8,7 @@ const { createRoster } = require('./roster');
 const { pollHerdr, watchHerdr, HERDR } = require('./herdr');
 const { createSpeaker } = require('./speaker');
 const { loadSettings } = require('./settings');
+const I18n = require('../shared/i18n');
 
 const HOOK_PORT = Number(process.env.OFFICE_HOOK_PORT || 47321);
 const FALLBACK_POLL_MS = 5000;
@@ -17,6 +18,15 @@ let window;
 let roster;
 let speaker;
 let settings;
+let i18n = I18n.create('en');
+
+// German when macOS prefers German, English otherwise; the window asks for it on load
+function uiLanguage() {
+  return process.env.OFFICE_LANG || app.getPreferredSystemLanguages()[0] || app.getLocale();
+}
+ipcMain.on('i18n:lang', (event) => {
+  event.returnValue = i18n.lang;
+});
 const terminals = new Map();
 
 function send(channel, payload) {
@@ -76,28 +86,8 @@ ipcMain.on('layout:state', (_event, state) => {
   }
 });
 
-const SHORTCUTS = [
-  'Im Office',
-  '  WASD / Pfeile – laufen',
-  '  Klick – hingehen; auf einen freien Stuhl: hinsetzen',
-  '  Klick auf Agent oder Herangehen – Agent in Herdr zeigen',
-  '  Klick auf leeren Arbeitsplatz – Agent aus der Pause zurückholen',
-  '  Enter – in Herdr tippen',
-  '  H – zurück ins Chefbüro',
-  '',
-  'Terminals',
-  '  ⌘Esc – Terminal verlassen, wieder laufen',
-  '  ⌘T / ⌘W – Shell-Tab öffnen / schließen',
-  '  ⌃Tab / ⌃⇧Tab – nächster / vorheriger Shell-Tab',
-  '',
-  'Ansicht',
-  '  ⌘1 / ⌘2 / ⌘3 – Herdr / Konsole / Office ein- und ausblenden',
-  '  ⌘0 – Standardansicht',
-  '  Trennlinien ziehen – Größe ändern, Doppelklick – zurücksetzen',
-].join('\n');
-
 function showShortcuts() {
-  dialog.showMessageBox(window, { message: 'Tastenkürzel', detail: SHORTCUTS, buttons: ['OK'] });
+  dialog.showMessageBox(window, { message: i18n.t('shortcutsTitle'), detail: i18n.t('shortcuts').join('\n'), buttons: ['OK'] });
 }
 
 function installMenu() {
@@ -107,36 +97,36 @@ function installMenu() {
       { role: 'appMenu' },
       { role: 'editMenu' },
       {
-        label: 'Shell',
+        label: i18n.t('menuShell'),
         submenu: [
-          { label: 'Neuer Tab', accelerator: 'CmdOrCtrl+T', click: shellCommand('new') },
-          { label: 'Tab schließen', accelerator: 'CmdOrCtrl+W', click: shellCommand('close') },
+          { label: i18n.t('newTab'), accelerator: 'CmdOrCtrl+T', click: shellCommand('new') },
+          { label: i18n.t('closeTab'), accelerator: 'CmdOrCtrl+W', click: shellCommand('close') },
           { type: 'separator' },
-          { label: 'Nächster Tab', accelerator: 'Ctrl+Tab', click: shellCommand('next') },
-          { label: 'Vorheriger Tab', accelerator: 'Ctrl+Shift+Tab', click: shellCommand('previous') },
-          { label: 'Nächster Tab', accelerator: 'CmdOrCtrl+Shift+]', click: shellCommand('next'), visible: false },
-          { label: 'Vorheriger Tab', accelerator: 'CmdOrCtrl+Shift+[', click: shellCommand('previous'), visible: false },
+          { label: i18n.t('nextTab'), accelerator: 'Ctrl+Tab', click: shellCommand('next') },
+          { label: i18n.t('previousTab'), accelerator: 'Ctrl+Shift+Tab', click: shellCommand('previous') },
+          { label: i18n.t('nextTab'), accelerator: 'CmdOrCtrl+Shift+]', click: shellCommand('next'), visible: false },
+          { label: i18n.t('previousTab'), accelerator: 'CmdOrCtrl+Shift+[', click: shellCommand('previous'), visible: false },
         ],
       },
       {
-        label: 'Ansicht',
+        label: i18n.t('menuView'),
         submenu: [
           paneToggle('Herdr', 'herdr', '1'),
-          paneToggle('Konsole', 'shell', '2'),
+          paneToggle(i18n.t('paneShell'), 'shell', '2'),
           paneToggle('Office', 'office', '3'),
           { type: 'separator' },
-          { label: 'Standardansicht', accelerator: 'CmdOrCtrl+0', click: () => send('layout:command', 'reset') },
+          { label: i18n.t('defaultLayout'), accelerator: 'CmdOrCtrl+0', click: () => send('layout:command', 'reset') },
         ],
       },
       {
-        label: 'Ansagen',
+        label: i18n.t('menuAnnouncements'),
         submenu: [
-          announcementToggle('„… is done“ ansagen', 'announceDone'),
-          announcementToggle('„… needs you“ ansagen', 'announceBlocked'),
+          announcementToggle(i18n.t('announceDone'), 'announceDone'),
+          announcementToggle(i18n.t('announceBlocked'), 'announceBlocked'),
         ],
       },
       { role: 'windowMenu' },
-      { role: 'help', submenu: [{ label: 'Tastenkürzel …', accelerator: 'CmdOrCtrl+/', click: showShortcuts }] },
+      { role: 'help', submenu: [{ label: i18n.t('shortcutsMenu'), accelerator: 'CmdOrCtrl+/', click: showShortcuts }] },
     ]),
   );
 }
@@ -161,16 +151,12 @@ function announceTransitions(transitions) {
   for (const { agent, from, to } of transitions) {
     const quiet = userIsLookingAt(agent);
     if (from === 'working' && (to === 'done' || to === 'idle')) {
-      const truth = agent.name === 'Agent Mulder' && Math.random() < 0.25 ? ' The truth is out there.' : '';
-      if (!quiet && settings.get('announceDone')) {
-        speaker.say(agent.voice, `${agent.name}, ${spokenTask(agent.task)}, is done.${truth}`);
-      }
-      send('bubble', { key: agent.key, text: 'Fertig!' });
+      const truth = agent.name === 'Agent Mulder' && Math.random() < 0.25;
+      if (!quiet && settings.get('announceDone')) speaker.announce(agent.voice, 'done', agent.name, spokenTask(agent.task), { truth });
+      send('bubble', { key: agent.key, text: i18n.t('bubbleDone') });
     } else if (to === 'blocked' && from !== 'blocked') {
-      if (!quiet && settings.get('announceBlocked')) {
-        speaker.say(agent.voice, `${agent.name}, ${spokenTask(agent.task)}, needs you.`);
-      }
-      send('bubble', { key: agent.key, text: 'Hast du kurz?' });
+      if (!quiet && settings.get('announceBlocked')) speaker.announce(agent.voice, 'blocked', agent.name, spokenTask(agent.task));
+      send('bubble', { key: agent.key, text: i18n.t('bubbleBlocked') });
     }
   }
 }
@@ -230,7 +216,7 @@ function startHookServer() {
       }
     });
   });
-  server.on('error', (error) => send('herdr-error', `Hook-Port ${HOOK_PORT}: ${error.message}`));
+  server.on('error', (error) => send('herdr-error', i18n.t('hookPortError', { port: HOOK_PORT, message: error.message })));
   server.listen(HOOK_PORT, '127.0.0.1');
 }
 
@@ -327,9 +313,10 @@ ipcMain.on('herdr:focus', (_event, { paneId }) => {
 });
 
 app.whenReady().then(() => {
+  i18n = I18n.create(uiLanguage());
   settings = loadSettings(path.join(app.getPath('userData'), 'settings.json'));
   roster = createRoster(path.join(app.getPath('userData'), 'roster.json'), settings.get('names'));
-  speaker = createSpeaker();
+  speaker = createSpeaker(i18n.lang);
   installMenu();
   createWindow();
   startHookServer();

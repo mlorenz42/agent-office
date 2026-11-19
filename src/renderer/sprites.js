@@ -594,15 +594,11 @@
   }
 
   // the shortcuts, woven into rugs: [title, colour, lines of [key, action] pairs]
-  const HELP_RUGS = {
-    walk: ['LAUFEN', '#2f5d50', [[['WASD / Pfeile', 'laufen']], [['Klick', 'hingehen'], ['H', 'Chefbüro']]]],
-    agents: ['AGENTEN', '#2e4a7a', [[['Klick / Herangehen', 'in Herdr']], [['Enter', 'tippen'], ['⌘Esc', 'zurück']]]],
-    terminals: ['TERMINALS', '#5b3a6e', [[['⌘T / ⌘W', 'Tab auf / zu']], [['⌃Tab', 'nächster Tab']]]],
-    view: ['ANSICHT', '#6b4a24', [[['⌘1 ⌘2 ⌘3', 'ein / aus']], [['⌘0', 'Standard'], ['⌘/', 'Hilfe']]]],
-  };
+  const HELP_RUG_COLORS = { walk: '#2f5d50', agents: '#2e4a7a', terminals: '#5b3a6e', view: '#6b4a24' };
 
   function drawHelpRug(ctx, item) {
-    const [title, color, lines] = HELP_RUGS[item.help];
+    const [title, lines] = window.I18n.t('helpRugs')[item.help];
+    const color = HELP_RUG_COLORS[item.help];
     const x = item.x * TILE + 6;
     const y = item.y * TILE + 4;
     const w = item.w * TILE - 12;
@@ -652,12 +648,7 @@
     ctx.restore();
   }
 
-  const LEGEND = [
-    ['working', 'arbeitet'],
-    ['blocked', 'braucht dich'],
-    ['done', 'fertig'],
-    ['idle', 'idle · zzz'],
-  ];
+  const LEGEND = ['working', 'blocked', 'done', 'idle'].map((status) => [status, window.I18n.t('legend')[status]]);
 
   function drawPosterRug(ctx, item) {
     const x = item.x * TILE + 4;
@@ -767,13 +758,13 @@
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     const subagents = `  ·  ${legendSubagents} ${legendSubagents === 1 ? 'Subagent' : 'Subagents'}`;
-    const titleWidth = ctx.measureText('LEGENDE').width;
+    const titleWidth = ctx.measureText(window.I18n.t('legendTitle')).width;
     ctx.font = '600 10px -apple-system, system-ui, sans-serif';
     const subWidth = ctx.measureText(subagents).width;
     const titleLeft = x + w / 2 - (titleWidth + subWidth) / 2;
     ctx.textAlign = 'left';
     ctx.font = '700 11px -apple-system, system-ui, sans-serif';
-    ctx.fillText('LEGENDE', titleLeft, y + 20);
+    ctx.fillText(window.I18n.t('legendTitle'), titleLeft, y + 20);
     ctx.fillStyle = '#e8c48a';
     ctx.font = '600 10px -apple-system, system-ui, sans-serif';
     ctx.fillText(subagents, titleLeft + titleWidth, y + 20.5);

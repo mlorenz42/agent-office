@@ -157,7 +157,7 @@ function createRoster(storePath, names) {
     const parent = [...live.values()].find((agent) => agent.sessionId === sessionId);
     if (!parent || subagents.has(agentId)) return null;
     const taken = new Set([...subagents.values()].map((subagent) => subagent.name));
-    const name = NAMES.slice().reverse().find((candidate) => !taken.has(candidate)) || 'Helfer';
+    const name = NAMES.slice().reverse().find((candidate) => !taken.has(candidate)) || `Agent ${taken.size + 1}`;
     const subagent = {
       key: `sub:${agentId}`,
       agentId,

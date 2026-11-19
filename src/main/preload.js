@@ -7,6 +7,7 @@ function subscribe(channel, callback) {
 }
 
 contextBridge.exposeInMainWorld('office', {
+  lang: ipcRenderer.sendSync('i18n:lang'),
   getAgents: () => ipcRenderer.invoke('agents:get'),
   getTerminalFont: () => ipcRenderer.invoke('terminal:font'),
   onAgents: (callback) => subscribe('agents', callback),

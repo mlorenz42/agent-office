@@ -265,9 +265,9 @@
       ],
       pods,
       signs: [
-        { text: 'Mein Büro', x: ROOM / 2, y: 0.5 },
-        { text: 'Meeting', x: (MEETING_LEFT + COLS) / 2, y: 0.5 },
-        { text: 'Lounge', x: COLS / 2, y: 0.5 },
+        { text: window.I18n.t('roomOffice'), x: ROOM / 2, y: 0.5 },
+        { text: window.I18n.t('roomMeeting'), x: (MEETING_LEFT + COLS) / 2, y: 0.5 },
+        { text: window.I18n.t('roomLounge'), x: COLS / 2, y: 0.5 },
       ],
       queueSpots,
       entrance,

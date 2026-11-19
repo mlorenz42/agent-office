@@ -12,21 +12,22 @@
       <section id="herdr-pane" class="pane">
         <div id="herdr-terminal" class="term"></div>
       </section>
-      <div id="split-vertical" class="splitter vertical" title="Ziehen zum Anpassen, Doppelklick = Standard"></div>
+      <div id="split-vertical" class="splitter vertical"></div>
       <section id="right">
         <section id="shell-pane" class="pane">
-          <nav class="tabbar"><div class="tab-add" title="Neuer Tab (⌘T)">+</div></nav>
+          <nav class="tabbar"><div class="tab-add">+</div></nav>
           <div class="tabbody"></div>
         </section>
-        <div id="split-horizontal" class="splitter horizontal" title="Ziehen zum Anpassen, Doppelklick = Standard"></div>
+        <div id="split-horizontal" class="splitter horizontal"></div>
         <section id="stage" class="pane">
-          <canvas id="office" title="WASD/Pfeile: laufen · Klick: hingehen, auf freien Stuhl: hinsetzen · Klick auf Agent oder Herangehen: in Herdr zeigen · Enter: in Herdr tippen · ⌘Esc: zurück ins Büro · H: Chefbüro · Alle Kürzel: Hilfe-Menü"></canvas>
+          <canvas id="office"></canvas>
           <div id="error" class="hidden"></div>
         </section>
       </section>
     </main>
     <script src="../../node_modules/@xterm/xterm/lib/xterm.js"></script>
     <script src="../../node_modules/@xterm/addon-fit/lib/addon-fit.js"></script>
+    <script src="../shared/i18n.js"></script>
     <script src="layout.js"></script>
     <script src="world.js"></script>
     <script src="sprites.js"></script>

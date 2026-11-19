@@ -79,7 +79,7 @@
       ptyId = null;
       exited = true;
       if (onExit) onExit();
-      else terminal.write(`\r\n\x1b[90m[${label} beendet – Taste drücken zum Neustarten]\x1b[0m\r\n`);
+      else terminal.write(`\r\n\x1b[90m${window.I18n.t('terminalExited', { label })}\x1b[0m\r\n`);
     });
     const observer = new ResizeObserver(refit);
     observer.observe(host);
@@ -103,6 +103,7 @@
     const bar = container.querySelector('.tabbar');
     const body = container.querySelector('.tabbody');
     const addButton = bar.querySelector('.tab-add');
+    addButton.title = window.I18n.t('newTabHint');
     const tabs = [];
     let active = null;
     let counter = 0;

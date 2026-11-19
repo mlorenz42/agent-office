@@ -14,6 +14,8 @@
   const MIN_SCALE = 0.4;
 
   const canvas = document.getElementById('office');
+  canvas.title = window.I18n.t('officeHint');
+  document.documentElement.lang = window.I18n.lang;
   const ctx = canvas.getContext('2d');
   const errorBox = document.getElementById('error');
 
@@ -71,7 +73,7 @@
 
   const player = {
     key: 'player',
-    name: 'Ich',
+    name: window.I18n.t('me'),
     task: '',
     isPlayer: true,
     x: world.bossChair.x,

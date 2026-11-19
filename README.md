@@ -21,18 +21,23 @@ Herdr. The shortcuts are on the rugs by the entrance and in the Help menu (⌘/)
 
 ## Install and start
 
+In Terminal, download the project into a folder of your choice and build the app there:
+
 ```bash
+git clone https://github.com/mlorenz42/agent-office.git
+cd agent-office
 npm install
 npm run install-app   # builds the app and copies it to /Applications/Agent Office.app
 ```
 
-Then start *Agent Office* like any other app. For development, `npm start` runs it from the source.
+Then start *Agent Office* like any other app. For development, `npm start` in the same folder runs it
+from the source.
 
 ## Voices
 
-Without extra voices every agent speaks with the macOS default voice. For distinct voices, download
-a few English or German ones marked *Premium* or *Enhanced* under System Settings → Accessibility →
-Spoken Content → System Voice → Manage Voices, then restart the app.
+Without extra voices every agent speaks with the macOS default voice. For distinct voices, search for
+*Voice* in System Settings, click the ⓘ next to it and download a few English or German voices marked
+*Premium* or *Enhanced*, then restart the app. German voices announce in German.
 
 ## Names
 
@@ -47,6 +52,8 @@ Agent Mulder and Agent Scully are always on the team. Replace the other names in
 
 Herdr cannot see subagents. Claude Code can report them through hooks that post to the app; other
 agents show up without their subagents.
+
+In the `agent-office` folder:
 
 ```bash
 npm run hooks:install     # into ~/.claude/settings.local.json (sessions started in ~)
