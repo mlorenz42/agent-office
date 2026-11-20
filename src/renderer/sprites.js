@@ -570,25 +570,38 @@
     ctx.restore();
   }
 
+  // One outlined "z", drawn once at a large size; the floating z's are scaled copies of it.
+  // (Drawing text at a new font size every frame made the z's the most expensive part of a frame.)
+  const ZZZ_SIZE = 72;
+  const zSprite = (() => {
+    const sprite = document.createElement('canvas');
+    sprite.width = ZZZ_SIZE;
+    sprite.height = ZZZ_SIZE;
+    const c = sprite.getContext('2d');
+    c.font = `900 ${ZZZ_SIZE * 0.75}px -apple-system, system-ui, sans-serif`;
+    c.textAlign = 'center';
+    c.textBaseline = 'middle';
+    c.lineJoin = 'round';
+    c.strokeStyle = '#1e293b';
+    c.lineWidth = ZZZ_SIZE / 6;
+    c.strokeText('z', ZZZ_SIZE / 2, ZZZ_SIZE / 2);
+    c.fillStyle = '#e0f2fe';
+    c.fillText('z', ZZZ_SIZE / 2, ZZZ_SIZE / 2);
+    return sprite;
+  })();
+
   function drawZzz(ctx, character, time) {
     const px = character.x * TILE + TILE / 2 + 10 * FIGURE_SCALE;
     const py = figureY(character.y * TILE + TILE / 2, -22);
     ctx.save();
-    ctx.lineJoin = 'round';
-    ctx.textBaseline = 'middle';
     for (let i = 0; i < 3; i++) {
       const t = (time / 1800 + i / 3 + character.phaseOffset) % 1;
-      const size = 9 + t * 9;
+      const size = (9 + t * 9) / 0.75; // font size 9–18, and the glyph fills 3/4 of the sprite
       const alpha = t < 0.15 ? t / 0.15 : 1 - (t - 0.15) / 0.85;
       ctx.globalAlpha = Math.max(0, alpha);
-      ctx.font = `900 ${size}px -apple-system, system-ui, sans-serif`;
       const x = px + t * 14 + Math.sin(t * 6) * 2;
       const y = py - t * 22;
-      ctx.strokeStyle = '#1e293b';
-      ctx.lineWidth = 3;
-      ctx.strokeText('z', x, y);
-      ctx.fillStyle = '#e0f2fe';
-      ctx.fillText('z', x, y);
+      ctx.drawImage(zSprite, x - size / 2, y - size / 2, size, size);
     }
     ctx.restore();
   }

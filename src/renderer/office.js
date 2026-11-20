@@ -500,6 +500,47 @@
     camera.y = clamp(player.y * TILE + TILE / 2 - visibleHeight / 2, mapHeight - visibleHeight);
   }
 
+  // Floor, walls, rugs, furniture and chairs only change with the office layout, the zoom or the
+  // counts on the legend rug, so they are drawn once into an offscreen canvas and copied each frame.
+  const staticLayer = document.createElement('canvas');
+  let staticKey = '';
+
+  function drawStaticLayer(ratio) {
+    const counts = {};
+    for (const agent of snapshot.agents) counts[agent.status] = (counts[agent.status] || 0) + 1;
+    const width = world.cols * TILE;
+    const height = world.rows * TILE;
+    const factor = ratio * scale;
+    const key = [world.signature, world.cols, world.rows, factor.toFixed(4), JSON.stringify(counts), snapshot.subagents.length].join('|');
+    if (key !== staticKey) {
+      staticKey = key;
+      staticLayer.width = Math.ceil(width * factor);
+      staticLayer.height = Math.ceil(height * factor);
+      const layer = staticLayer.getContext('2d');
+      layer.setTransform(factor, 0, 0, factor, 0, 0);
+      Sprites.setLegendCounts(counts, snapshot.subagents.length);
+      Sprites.drawFloorAndWalls(layer, world);
+      Sprites.drawSpaceAreas(layer, world);
+      Sprites.drawPartitions(layer, world);
+      Sprites.drawSpaceSigns(layer, world);
+      for (const item of world.decor) {
+        if (item.kind === 'rug') continue;
+        layer.save();
+        Sprites.drawDecor(layer, item);
+        layer.restore();
+      }
+      Sprites.drawBossDesk(layer, world);
+      Sprites.drawMeetingTable(layer, world);
+      for (const pod of world.pods) Sprites.drawTable(layer, pod.table);
+      Sprites.drawGlassWalls(layer, world);
+      for (const chair of world.chairs) {
+        Sprites.drawChair(layer, chair, 'seat');
+        if (!Sprites.chairBackInFront(chair)) Sprites.drawChair(layer, chair, 'back');
+      }
+    }
+    ctx.drawImage(staticLayer, 0, 0, width, height);
+  }
+
   function render(now) {
     const ratio = window.devicePixelRatio || 1;
     ctx.setTransform(1, 0, 0, 1, 0, 0);
@@ -507,27 +548,7 @@
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.setTransform(ratio * scale, 0, 0, ratio * scale, -camera.x * ratio * scale, -camera.y * ratio * scale);
 
-    const counts = {};
-    for (const agent of snapshot.agents) counts[agent.status] = (counts[agent.status] || 0) + 1;
-    Sprites.setLegendCounts(counts, snapshot.subagents.length);
-    Sprites.drawFloorAndWalls(ctx, world);
-    Sprites.drawSpaceAreas(ctx, world);
-    Sprites.drawPartitions(ctx, world);
-    Sprites.drawSpaceSigns(ctx, world);
-    for (const item of world.decor) {
-      if (item.kind === 'rug') continue;
-      ctx.save();
-      Sprites.drawDecor(ctx, item);
-      ctx.restore();
-    }
-    Sprites.drawBossDesk(ctx, world);
-    Sprites.drawMeetingTable(ctx, world);
-    for (const pod of world.pods) Sprites.drawTable(ctx, pod.table);
-    Sprites.drawGlassWalls(ctx, world);
-    for (const chair of world.chairs) {
-      Sprites.drawChair(ctx, chair, 'seat');
-      if (!Sprites.chairBackInFront(chair)) Sprites.drawChair(ctx, chair, 'back');
-    }
+    drawStaticLayer(ratio);
     for (const desk of world.desks) Sprites.drawDesk(ctx, desk, agentByKey(desk.ownerKey), now);
     Sprites.drawRoomSigns(ctx, world, scale);
 
@@ -606,7 +627,13 @@
   }
 
   let last = performance.now();
+  const FRAME_MS = 1000 / 30; // 30 frames per second are plenty for walking and blinking
+
   function frame(now) {
+    if (now - last < FRAME_MS - 2) {
+      requestAnimationFrame(frame);
+      return;
+    }
     const dt = Math.min((now - last) / 1000, 0.05);
     last = now;
     assignTargets();
