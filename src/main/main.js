@@ -126,6 +126,15 @@ function installMenu() {
               send('follow-focus', item.checked);
             },
           },
+          {
+            label: i18n.t('animations'),
+            type: 'checkbox',
+            checked: settings.get('animations'),
+            click: (item) => {
+              settings.set('animations', item.checked);
+              send('animations', item.checked);
+            },
+          },
         ],
       },
       {
@@ -317,6 +326,7 @@ ipcMain.on('pty:close', (_event, { id }) => {
 ipcMain.handle('agents:get', () => roster.snapshot());
 ipcMain.handle('terminal:font', () => terminalFont());
 ipcMain.handle('follow-focus:get', () => settings.get('followFocus'));
+ipcMain.handle('animations:get', () => settings.get('animations'));
 ipcMain.on('herdr:focus', (_event, { paneId }) => {
   execFile(HERDR, ['agent', 'focus', paneId], { timeout: 5000 }, (error) => {
     if (error) send('herdr-error', `herdr agent focus ${paneId}: ${error.message}`);

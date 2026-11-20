@@ -98,6 +98,7 @@
     requestAnimationFrame(() => {
       resize();
       arrangeBySpace();
+      markDirty();
     }),
   ).observe(canvas);
   resize();
@@ -185,6 +186,7 @@
     }
     followFocus();
     firstSnapshot = false;
+    markDirty();
   }
 
   // Office hours: while nobody waits I walk over to the agent whose tab Herdr shows; as soon as
@@ -605,7 +607,7 @@
   }
 
   function drawUfoFlyby(now) {
-    if (!ufo && now > nextUfoAt) {
+    if (!ufo && animate && now > nextUfoAt) {
       const rightward = Math.random() < 0.5;
       ufo = { start: now, duration: 11000, y: 2 + Math.random() * (world.rows - 6), rightward };
       ufo.beamAt = 0.3 + Math.random() * 0.4;
@@ -627,14 +629,49 @@
   }
 
   let last = performance.now();
-  const FRAME_MS = 1000 / 30; // 30 frames per second are plenty for walking and blinking
+  // Frames per second: 30 while someone walks, 15 when everyone sits (lights, screens and breathing
+  // still look smooth), 8 while the window is in the background, none while the office is hidden.
+  // With animations off (View menu) the picture is redrawn only when something changes, and
+  // lights, screens, breathing and z's are drawn as they look at a fixed moment.
+  const STILL_TIME = 40; // a moment in which the blinking "needs you" light is on
+  let animate = true;
+  let dirty = true;
+  let wasWalking = false;
+  const markDirty = () => {
+    dirty = true;
+  };
+  window.office.getAnimations().then((enabled) => {
+    animate = enabled;
+    markDirty();
+  });
+  window.office.onAnimations((enabled) => {
+    animate = enabled;
+    markDirty();
+  });
+
+  function isWalking() {
+    return Boolean(
+      keys.size || player.moving || player.path.length || ufo || beams.length ||
+        [...characters.values()].some((character) => character.moving || character.path.length),
+    );
+  }
+
+  function frameInterval(walking) {
+    if (!document.hasFocus()) return 1000 / 8;
+    return 1000 / (walking ? 30 : 15);
+  }
 
   function frame(now) {
-    if (now - last < FRAME_MS - 2) {
+    const walking = isWalking();
+    const bubbleExpired = [...bubbles.values()].some((bubble) => now - bubble.at > BUBBLE_MS);
+    const changed = dirty || walking || wasWalking || bubbleExpired;
+    if (!canvas.clientWidth || (!animate && !changed) || now - last < frameInterval(walking) - 2) {
       requestAnimationFrame(frame);
       return;
     }
-    const dt = Math.min((now - last) / 1000, 0.05);
+    dirty = false;
+    wasWalking = walking;
+    const dt = Math.min((now - last) / 1000, 0.15);
     last = now;
     assignTargets();
     for (const [key, character] of characters) {
@@ -659,7 +696,7 @@
     for (const character of [...characters.values(), player]) markSeated(character);
     updateProximity(now);
     updateCamera();
-    render(now);
+    render(animate || walking ? now : STILL_TIME);
     requestAnimationFrame(frame);
   }
 
@@ -676,7 +713,10 @@
     }
     keys.add(event.code);
   });
-  window.addEventListener('keyup', (event) => keys.delete(event.code));
+  window.addEventListener('keyup', (event) => {
+    keys.delete(event.code);
+    markDirty();
+  });
   window.addEventListener('blur', () => keys.clear());
 
   function characterAt(worldX, worldY) {
@@ -778,6 +818,7 @@
   }
 
   canvas.addEventListener('mousedown', (event) => {
+    markDirty();
     const rect = canvas.getBoundingClientRect();
     const worldX = (event.clientX - rect.left) / scale / TILE + camera.x / TILE - 0.5;
     const worldY = (event.clientY - rect.top) / scale / TILE + camera.y / TILE - 0.5;
@@ -815,7 +856,10 @@
     errorBox.classList.add('hidden');
     applySnapshot(next);
   });
-  window.office.onBubble(({ key, text }) => bubbles.set(key, { text, at: performance.now() }));
+  window.office.onBubble(({ key, text }) => {
+    bubbles.set(key, { text, at: performance.now() });
+    markDirty();
+  });
   window.office.onError((message) => {
     errorBox.textContent = message;
     errorBox.classList.remove('hidden');

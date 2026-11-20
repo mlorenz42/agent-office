@@ -12,6 +12,8 @@ contextBridge.exposeInMainWorld('office', {
   getTerminalFont: () => ipcRenderer.invoke('terminal:font'),
   getFollowFocus: () => ipcRenderer.invoke('follow-focus:get'),
   onFollowFocus: (callback) => subscribe('follow-focus', callback),
+  getAnimations: () => ipcRenderer.invoke('animations:get'),
+  onAnimations: (callback) => subscribe('animations', callback),
   onAgents: (callback) => subscribe('agents', callback),
   onBubble: (callback) => subscribe('bubble', callback),
   onError: (callback) => subscribe('herdr-error', callback),
