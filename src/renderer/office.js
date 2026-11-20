@@ -551,6 +551,10 @@
     ctx.setTransform(ratio * scale, 0, 0, ratio * scale, -camera.x * ratio * scale, -camera.y * ratio * scale);
 
     drawStaticLayer(ratio);
+    for (const desk of world.desks) {
+      const agent = agentByKey(desk.ownerKey);
+      if (agent && awayFromDesk(agent)) Sprites.drawDeskRug(ctx, desk, agent, loungeSeatByKey.has(agent.key));
+    }
     for (const desk of world.desks) Sprites.drawDesk(ctx, desk, agentByKey(desk.ownerKey), now);
     Sprites.drawRoomSigns(ctx, world, scale);
 
@@ -562,10 +566,6 @@
     }
     const standingWithAgent = nearCandidate && nearCandidate.shown;
     const placed = [];
-    for (const desk of world.desks) {
-      const agent = agentByKey(desk.ownerKey);
-      if (agent && awayFromDesk(agent)) Sprites.drawDeskTag(ctx, desk, agent, scale, placed, loungeSeatByKey.has(agent.key));
-    }
     for (const character of [...drawn].sort((a, b) => Math.round(a.y) - Math.round(b.y) || a.x - b.x)) {
       if (character === player && standingWithAgent) continue;
       Sprites.drawLabel(ctx, character, scale, Boolean(agentByKey(character.key)?.focused), placed);
@@ -761,8 +761,9 @@
   function deskAt(x, y) {
     for (const [key, desk] of world.deskByKey) {
       const onDesk = y === desk.y && (x === desk.x || x === desk.x + 1);
-      const onChair = (x === desk.chair.x || x === desk.chair.x - 1) && (y === desk.chair.y || y === desk.chair.y + 1);
-      if (onDesk || onChair) return agentByKey(key);
+      const onChair = (x === desk.chair.x || x === desk.chair.x - 1) && y === desk.chair.y;
+      const onRug = x >= desk.x - 1 && x <= desk.x + 3 && y >= desk.chair.y + 1 && y <= desk.chair.y + 2;
+      if (onDesk || onChair || onRug) return agentByKey(key);
     }
     return null;
   }

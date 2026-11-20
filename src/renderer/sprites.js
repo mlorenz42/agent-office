@@ -467,48 +467,47 @@
     ctx.restore();
   }
 
-  // Name plate on the empty chair of an agent who is away (on a break, in a meeting, at my door):
-  // the tab name, so I can click the desk to call the agent back.
-  function drawDeskTag(ctx, desk, agent, scale, placed, onBreak) {
-    const px = desk.chair.x * TILE + TILE / 2;
-    let py = desk.chair.y * TILE + TILE / 2 + 6;
-    const smallSize = 9.5 / scale;
-    const taskSize = 10.5 / scale;
-    const maxWidth = 160 / scale; // wider than a desk: neighbouring plates step aside (see drawLabel)
+  // A rug in front of the desk of an agent who is away (on a break, in a meeting, at my door):
+  // who sits here and the tab name, so I can click it to call the agent back. It lies on the floor
+  // and shrinks with the office like the other rugs.
+  function drawDeskRug(ctx, desk, agent, onBreak) {
+    const x = (desk.x - 1) * TILE + 6;
+    const y = (desk.chair.y + 1) * TILE + 2;
+    const w = 5 * TILE - 12;
+    const h = 2 * TILE - 6;
     ctx.save();
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    const who = onBreak ? `☕ ${agent.name}` : agent.name;
-    ctx.font = `600 ${smallSize}px -apple-system, system-ui, sans-serif`;
-    const whoWidth = ctx.measureText(who).width + 10 / scale;
-    ctx.font = `600 ${taskSize}px -apple-system, system-ui, sans-serif`;
-    const lines = agent.task ? wrapLines(ctx, agent.task, maxWidth, 2) : [];
-    const width = Math.max(whoWidth, ...lines.map((line) => ctx.measureText(line).width)) + 12 / scale;
-    const height = smallSize + 6 / scale + lines.length * (taskSize + 2 / scale);
-    const clashes = (y) => placed.some((other) => px - width / 2 < other.x + other.w && other.x < px + width / 2 && y < other.y + other.h && other.y < y + height);
-    if (clashes(py)) py = [py + height + 3 / scale, py + 2 * (height + 3 / scale)].find((y) => !clashes(y)) ?? py;
-    placed.push({ x: px - width / 2, y: py, w: width, h: height });
-
-    ctx.fillStyle = 'rgba(22,24,30,0.55)';
-    roundRect(ctx, px - width / 2, py, width, height, 5 / scale);
+    ctx.fillStyle = '#3d4658';
+    roundRect(ctx, x, y, w, h, 8);
     ctx.fill();
-    ctx.setLineDash([3 / scale, 2 / scale]);
-    ctx.strokeStyle = 'rgba(226,232,240,0.7)';
-    ctx.lineWidth = 1 / scale;
+    ctx.strokeStyle = '#e8c48a';
+    ctx.lineWidth = 2;
+    roundRect(ctx, x + 4, y + 4, w - 8, h - 8, 5);
     ctx.stroke();
-    ctx.setLineDash([]);
 
-    ctx.font = `600 ${smallSize}px -apple-system, system-ui, sans-serif`;
-    const textWidth = ctx.measureText(who).width;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const fit = (text, weight, size, min) => {
+      let fontSize = size;
+      ctx.font = `${weight} ${fontSize}px -apple-system, system-ui, sans-serif`;
+      while (fontSize > min && ctx.measureText(text).width > w - 22) {
+        fontSize -= 0.5;
+        ctx.font = `${weight} ${fontSize}px -apple-system, system-ui, sans-serif`;
+      }
+      return fitName(ctx, text, w - 22);
+    };
+    const who = fit(onBreak ? `☕ ${agent.name}` : agent.name, 600, 10, 8);
+    const whoWidth = ctx.measureText(who).width;
     ctx.fillStyle = STATUS_COLORS[agent.status] || STATUS_COLORS.unknown;
     ctx.beginPath();
-    ctx.arc(px - textWidth / 2 - 4 / scale, py + 2 / scale + smallSize / 2, 3 / scale, 0, Math.PI * 2);
+    ctx.arc(x + w / 2 - whoWidth / 2 - 6, y + 17, 3, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#cbd5e1';
-    ctx.fillText(who, px + 2 / scale, py + 2 / scale);
-    ctx.fillStyle = '#ffffff';
-    ctx.font = `600 ${taskSize}px -apple-system, system-ui, sans-serif`;
-    lines.forEach((line, index) => ctx.fillText(line, px, py + smallSize + 4 / scale + index * (taskSize + 2 / scale)));
+    ctx.fillStyle = '#e8c48a';
+    ctx.fillText(who, x + w / 2 + 3, y + 17.5);
+    if (agent.task) {
+      const task = fit(agent.task, 700, 13, 9);
+      ctx.fillStyle = '#fdf4e3';
+      ctx.fillText(task, x + w / 2, y + 36);
+    }
     ctx.restore();
   }
 
@@ -1643,6 +1642,6 @@
     drawMeetingTable,
     drawRoomSigns,
     setLegendCounts,
-    drawDeskTag,
+    drawDeskRug,
   };
 })();
