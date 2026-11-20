@@ -1,4 +1,4 @@
-# Agent Office
+# The Bureau
 
 A walkable 2D office for macOS where every AI coding agent running in [Herdr](https://herdr.dev) –
 Claude Code or any other agent Herdr detects – is a character at a desk. Herdr itself runs on the
@@ -25,13 +25,13 @@ Herdr. The shortcuts are on the rugs by the entrance and in the Help menu (⌘/)
 In Terminal, download the project into a folder of your choice and build the app there:
 
 ```bash
-git clone https://github.com/mlorenz42/agent-office.git
-cd agent-office
+git clone https://github.com/mlorenz42/the-bureau.git
+cd the-bureau
 npm install
-npm run install-app   # builds the app and copies it to /Applications/Agent Office.app
+npm run install-app   # builds the app and copies it to /Applications/The Bureau.app
 ```
 
-Then start *Agent Office* like any other app. For development, `npm start` in the same folder runs it
+Then start *The Bureau* like any other app. For development, `npm start` in the same folder runs it
 from the source.
 
 ## Voices
@@ -43,7 +43,7 @@ Without extra voices every agent speaks with the macOS default voice. For distin
 ## Names
 
 Agent Mulder and Agent Scully are always on the team. Replace the other names in
-`~/Library/Application Support/agent-office/settings.json` and restart the app:
+`~/Library/Application Support/the-bureau/settings.json` and restart the app:
 
 ```json
 { "names": ["Ada", "Linus", "Grace"] }
@@ -54,7 +54,7 @@ Agent Mulder and Agent Scully are always on the team. Replace the other names in
 Herdr cannot see subagents. Claude Code can report them through hooks that post to the app; other
 agents show up without their subagents.
 
-In the `agent-office` folder:
+In the `the-bureau` folder:
 
 ```bash
 npm run hooks:install     # into ~/.claude/settings.local.json (sessions started in ~)

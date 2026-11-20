@@ -38,7 +38,7 @@ function createWindow() {
     width: 1500,
     height: 950,
     backgroundColor: '#1d1f24',
-    title: 'Agent Office',
+    title: 'The Bureau',
     show: false,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),

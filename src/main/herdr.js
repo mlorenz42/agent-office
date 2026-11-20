@@ -96,7 +96,7 @@ function watchHerdr(onChange) {
     socket = current;
     let buffer = '';
     current.on('connect', () => {
-      current.write(`${JSON.stringify({ id: 'agent-office', method: 'events.subscribe', params: { subscriptions } })}\n`);
+      current.write(`${JSON.stringify({ id: 'the-bureau', method: 'events.subscribe', params: { subscriptions } })}\n`);
     });
     current.on('data', (chunk) => {
       buffer += chunk;

@@ -1,10 +1,10 @@
-"""Add or remove the Agent Office subagent hooks in a Claude Code settings file."""
+"""Add or remove The Bureau's subagent hooks in a Claude Code settings file."""
 import json
 import sys
 from pathlib import Path
 
-MARKER = "agent-office"
-OLD_MARKERS = ["claude-office"]  # the app's former name; removed on install/uninstall
+MARKER = "the-bureau"
+OLD_MARKERS = ["agent-office", "claude-office"]  # the app's former names; removed on install/uninstall
 COMMAND = (
     "curl -s -m 1 -X POST -H 'Content-Type: application/json' --data-binary @- "
     "http://127.0.0.1:47321/hook >/dev/null 2>&1 || true # " + MARKER
@@ -36,7 +36,7 @@ def main(action, path):
     if not hooks:
         settings.pop("hooks")
     settings_path.write_text(json.dumps(settings, indent=2) + "\n")
-    print(f"{action}ed Agent Office hooks in {settings_path}")
+    print(f"{action}ed The Bureau hooks in {settings_path}")
 
 
 if __name__ == "__main__":

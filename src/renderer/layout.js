@@ -1,6 +1,6 @@
 /* global window, document, localStorage */
 (function () {
-  const STORAGE_KEY = 'agent-office.layout';
+  const STORAGE_KEY = 'the-bureau.layout';
   const DEFAULTS = { left: 50, top: 42, herdr: true, shell: true, office: true };
   const MIN_PERCENT = 15;
   const SPLITTER = '4px';

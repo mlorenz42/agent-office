@@ -1,7 +1,7 @@
 /* global window, document, requestAnimationFrame */
 (function () {
   const { TILE, planForAspect, buildWorld, walkable, crossesPartition, findPath } = window.World;
-  const SEATING_KEY = 'agent-office.seating';
+  const SEATING_KEY = 'the-bureau.seating';
   const Sprites = window.Sprites;
 
   const AGENT_SPEED = 3.6;
